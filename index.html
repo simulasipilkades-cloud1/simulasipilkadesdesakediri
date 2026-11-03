@@ -135,7 +135,7 @@
             <div class="kandidat-card" onclick="pilihKandidat(1, 'CALON 01', false)">
                 <div class="foto-container">
                     <div class="nomor-urut">1</div>
-                    <img src="image/02.png" class="foto-kandidat" alt="Foto Calon 01">
+                    <img src="image/03.jpg" class="foto-kandidat" alt="Foto Calon 01">
                 </div>
                 <div class="nama-kandidat">CALON 01</div>
             </div>
@@ -144,7 +144,7 @@
             <div class="kandidat-card" onclick="pilihKandidat(2, 'CASTAM AS', true)">
                 <div class="foto-container">
                     <div class="nomor-urut">2</div>
-                    <img src="image/Castam.jpg" class="foto-kandidat" alt="Foto Castam">
+                    <img src="image/Castam.jpeg" class="foto-kandidat" alt="Foto Castam">
                 </div>
                 <div class="nama-kandidat">CASTAM AS</div>
             </div>
@@ -179,8 +179,8 @@
                 <h3>Silakan Pilih Calon Kepala Desa</h3>
             </div>
             <div class="bg-blur-grid">
-                <div class="bg-blur-card"><img src="image/02.png" class="foto-kandidat" alt="Calon 01 Blur"></div>
-                <div class="bg-blur-card"><img src="image/Castam.jpg" class="foto-kandidat" alt="Castam Blur"></div>
+                <div class="bg-blur-card"><img src="image/03.jpg" class="foto-kandidat" alt="Calon 01 Blur"></div>
+                <div class="bg-blur-card"><img src="image/Castam.jpeg" class="foto-kandidat" alt="Castam Blur"></div>
             </div>
         </div>
 
@@ -218,9 +218,9 @@
         let fotoHTML = '';
         
         if (kandidatTerpilih.nomor === 1) {
-            fotoHTML = `<img src="image/02.png" alt="Foto Calon 01" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
-        } else if (kandidatTerpilor = kandidatTerpilih.nomor === 2) {
-            fotoHTML = `<img src="image/Castam.jpg" alt="Foto Castam" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
+            fotoHTML = `<img src="image/03.jpg" alt="Foto Calon 01" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
+        } else if (kandidatTerpilih.nomor === 2) {
+            fotoHTML = `<img src="image/Castam.jpeg" alt="Foto Castam" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
         } else {
             fotoHTML = `
                 <div class="siluet" style="margin: 0 auto; width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px;">
