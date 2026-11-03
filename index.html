@@ -1,4 +1,6 @@
-<html lang="id"><head>
+<!DOCTYPE html>
+<html lang="id">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulasi Pilkades Digital</title>
@@ -18,7 +20,7 @@
         .screen.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Layar 1: Kandidat - Diubah ke flex agar posisinya di tengah */
+        /* Layar 1: Kandidat */
         .kandidat-grid { 
             display: flex; 
             justify-content: center; 
@@ -32,7 +34,7 @@
             background: #fff; border: 2px solid #eee; border-radius: 10px; padding: 15px; 
             cursor: pointer; transition: 0.2s; position: relative;
             display: flex; flex-direction: column; align-items: center; z-index: 10;
-            width: 180px; /* Lebar card diseragamkan agar rapi di tengah */
+            width: 180px; 
         }
         
         .kandidat-card:hover { border-color: #3498db; transform: translateY(-2px); }
@@ -92,7 +94,6 @@
         .bg-blur-replika { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .bg-blur-replika .judul-blur { margin-bottom: 20px; opacity: 0.5; }
         
-        /* Background blur grid disesuaikan ke flex agar posisinya di tengah */
         .bg-blur-grid { 
             display: flex; 
             justify-content: center; 
@@ -143,14 +144,14 @@
             <div class="kandidat-card" onclick="pilihKandidat(2, 'CASTAM AS', true)">
                 <div class="foto-container">
                     <div class="nomor-urut">2</div>
-                    <img src="image/Castam.jpeg" class="foto-kandidat" alt="Foto Castam">
+                    <img src="image/Castam.jpg" class="foto-kandidat" alt="Foto Castam">
                 </div>
                 <div class="nama-kandidat">CASTAM AS</div>
             </div>
 
         </div>
 
-        <button id="btn-pilih-utama" class="btn-pilih" disabled="" onclick="tampilKonfirmasi()">PILIH KANDIDAT INI</button>
+        <button id="btn-pilih-utama" class="btn-pilih" disabled onclick="tampilKonfirmasi()">PILIH KANDIDAT INI</button>
     </div>
 
     <!-- LAYAR 2: KONFIRMASI -->
@@ -179,7 +180,7 @@
             </div>
             <div class="bg-blur-grid">
                 <div class="bg-blur-card"><img src="image/02.png" class="foto-kandidat" alt="Calon 01 Blur"></div>
-                <div class="bg-blur-card"><img src="image/Castam.jpeg" class="foto-kandidat" alt="Castam Blur"></div>
+                <div class="bg-blur-card"><img src="image/Castam.jpg" class="foto-kandidat" alt="Castam Blur"></div>
             </div>
         </div>
 
@@ -218,8 +219,8 @@
         
         if (kandidatTerpilih.nomor === 1) {
             fotoHTML = `<img src="image/02.png" alt="Foto Calon 01" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
-        } else if (kandidatTerpilih.nomor === 2) {
-            fotoHTML = `<img src="image/Castam.jpeg" alt="Foto Castam" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
+        } else if (kandidatTerpilor = kandidatTerpilih.nomor === 2) {
+            fotoHTML = `<img src="image/Castam.jpg" alt="Foto Castam" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
         } else {
             fotoHTML = `
                 <div class="siluet" style="margin: 0 auto; width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px;">
@@ -259,4 +260,5 @@
     }
 </script>
 
-</body></html>
+</body>
+</html>
