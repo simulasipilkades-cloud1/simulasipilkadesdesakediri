@@ -1,332 +1,262 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
+<html lang="id"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIMULASI PILKADES DIGITAL</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Simulasi Pilkades Digital</title>
     <style>
-        .ballot-drop { animation: dropBallot 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        @keyframes dropBallot {
-            0% { transform: translateY(-150px) scale(0.9); opacity: 0; }
-            50% { transform: translateY(0) scale(1); opacity: 1; }
-            80% { transform: translateY(120px) scale(0.4); opacity: 0.8; }
-            100% { transform: translateY(200px) scale(0.1); opacity: 0; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        .app-container {
+            width: 100%; max-width: 900px; height: 100%; max-height: 700px;
+            background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
         }
+
+        .header { background: #2c3e50; color: white; padding: 15px; text-align: center; font-size: 14px; z-index: 10; }
+        
+        .screen { display: none; flex: 1; padding: 20px; overflow-y: auto; text-align: center; position: relative; }
+        .screen.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Layar 1: Kandidat - Diubah ke flex agar posisinya di tengah */
+        .kandidat-grid { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            flex-wrap: wrap; 
+            gap: 20px; 
+            margin-top: 20px; 
+        }
+        
+        .kandidat-card { 
+            background: #fff; border: 2px solid #eee; border-radius: 10px; padding: 15px; 
+            cursor: pointer; transition: 0.2s; position: relative;
+            display: flex; flex-direction: column; align-items: center; z-index: 10;
+            width: 180px; /* Lebar card diseragamkan agar rapi di tengah */
+        }
+        
+        .kandidat-card:hover { border-color: #3498db; transform: translateY(-2px); }
+        .kandidat-card.selected { border-color: #e74c3c; background: #fdf2f2; }
+        
+        .foto-container {
+            position: relative; width: 100%; height: 150px; margin-bottom: 10px;
+            display: flex; justify-content: center;
+        }
+
+        .foto-kandidat { 
+            width: 120px; height: 150px; background-color: #ecf0f1; 
+            border-radius: 8px; object-fit: cover; object-position: top;
+        }
+
+        .siluet {
+            width: 120px; height: 150px; background-color: #bdc3c7;
+            border-radius: 8px; display: flex; justify-content: center; align-items: flex-end; overflow: hidden;
+        }
+        
+        .siluet svg { width: 80%; height: 80%; fill: #7f8c8d; }
+
+        .nomor-urut {
+            position: absolute; top: -10px; background-color: #e74c3c; color: white;
+            font-weight: bold; font-size: 18px; width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 20;
+        }
+
+        .nama-kandidat { font-weight: bold; font-size: 16px; color: #2c3e50; min-height: 24px; }
+        
+        .btn-pilih { 
+            background: #e74c3c; color: white; border: none; padding: 15px 30px; font-size: 20px; 
+            font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; max-width: 400px; margin: 20px auto 0 auto; display: block;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); transition: 0.2s; position: relative; z-index: 10;
+        }
+        .btn-pilih:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; }
+        .btn-pilih:active:not(:disabled) { transform: scale(0.98); }
+
+        /* Layar 2: Konfirmasi */
+        .konfirmasi-box { 
+            background: #ecf0f1; padding: 20px; border-radius: 15px; margin-top: 20px; 
+            display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10;
+            max-width: 400px; margin-left: auto; margin-right: auto;
+        }
+        .konfirmasi-box img { width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;}
+        .konfirmasi-box .siluet { width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; }
+        
+        .btn-group { display: flex; gap: 15px; margin-top: 20px; position: relative; z-index: 10; justify-content: center; }
+        .btn-batal { background: #e74c3c; color: white; border: none; padding: 15px; font-size: 18px; border-radius: 10px; width: 150px; cursor: pointer; }
+        .btn-lanjut { background: #2980b9; color: white; border: none; padding: 15px; font-size: 18px; border-radius: 10px; width: 150px; cursor: pointer; }
+
+        /* Layar 3: Sukses */
+        #screen-sukses { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100%; position: relative; overflow: hidden; cursor: pointer; }
+        #screen-sukses.active { display: flex; }
+        
+        .bg-blur-replika { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .bg-blur-replika .judul-blur { margin-bottom: 20px; opacity: 0.5; }
+        
+        /* Background blur grid disesuaikan ke flex agar posisinya di tengah */
+        .bg-blur-grid { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            flex-wrap: wrap; 
+            gap: 20px; 
+            width: 100%; 
+        }
+        .bg-blur-card { background: #fff; border: 2px solid #eee; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; align-items: center; width: 180px; }
+
+        .bg-blur-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(8px); background: rgba(0, 0, 0, 0.4); z-index: 2; }
+
+        .sukses-content { 
+            position: relative; z-index: 10; background: rgba(255, 255, 255, 0.95); 
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            max-width: 80%; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; 
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .sukses-icon { font-size: 80px; color: #2ecc71; margin-bottom: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between select-none">
+<body>
 
-    <!-- Header -->
-    <header class="py-3 px-4 md:px-6 bg-white border-b border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
-        <div class="flex items-center gap-3 text-center sm:text-left">
-            <div class="p-2 bg-blue-600 rounded-lg text-white font-bold text-lg md:text-xl shadow-md">
-                <i class="fas fa-vote-yea"></i>
-            </div>
-            <div>
-                <h1 id="appTitle" class="font-extrabold tracking-wider text-sm md:text-lg text-blue-700 uppercase">PILKADES DESA DIGITAL (SIMULASI)</h1>
-                <p id="appSubTitle" class="text-[11px] md:text-xs text-slate-500 font-medium">Desa Kediri, Kecamatan Binong, Kabupaten Subang - Tahun 2026</p>
-            </div>
-        </div>
+<div class="app-container">
+    <div class="header">
+        <h3>PILKADES DESA KEDIRI (SIMULASI)</h3>
+        <p>Kecamatan Binong, Kabupaten Subang - Tahun 2026</p>
+    </div>
+
+    <!-- LAYAR 1: DAFTAR KANDIDAT -->
+    <div id="screen-kandidat" class="screen active">
+        <h3>Silakan Pilih Calon Kepala Desa</h3>
+        <p style="font-size: 14px; color: #7f8c8d;">Tekan pada kotak kandidat yang Anda pilih</p>
         
-    </header>
-
-    <!-- Main Voting Area -->
-    <main class="flex-1 px-4 py-6 flex flex-col justify-center items-center max-w-7xl mx-auto w-full">
-        <div class="text-center mb-6">
-            <h2 class="text-lg md:text-2xl font-black text-slate-800 tracking-wide">SILAKAN PILIH CALON KEPALA DESA</h2>
-            <p class="text-xs md:text-sm text-slate-500 mt-1">Tekan pada kotak kandidat yang Anda pilih untuk mencoblos</p>
-        </div>
-
-        <!-- Container kandidat responsif (Otomatis menyesuaikan HP & PC) -->
-        <div id="candidateContainer" class="flex flex-wrap justify-center items-center gap-6 w-full max-w-3xl my-auto">
-            <!-- Kandidat dimasukkan lewat JS -->
-        </div>
-    </main>
-
-    <!-- Modal Konfirmasi Coblos -->
-    <div id="modalKonfirmasi" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white border border-slate-200 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center">
-            <h3 class="text-lg font-bold text-slate-800">Konfirmasi Pilihan</h3>
-            <p class="text-xs text-slate-500 mb-4">Apakah Anda yakin ingin memilih kandidat ini?</p>
-
-            <div class="bg-slate-50 rounded-2xl p-4 mb-5 border border-slate-200">
-                <div class="w-32 h-24 mx-auto mb-3 rounded-xl overflow-hidden border-2 border-blue-600 shadow-md">
-                    <img id="modalFoto" src="" class="w-full h-full object-cover">
+        <div class="kandidat-grid">
+            
+            <!-- Kandidat 1 -->
+            <div class="kandidat-card" onclick="pilihKandidat(1, 'CALON 01', false)">
+                <div class="foto-container">
+                    <div class="nomor-urut">1</div>
+                    <img src="image/02.png" class="foto-kandidat" alt="Foto Calon 01">
                 </div>
-                <span id="modalNomor" class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-1"></span>
-                <h4 id="modalNama" class="text-base md:text-lg font-extrabold text-slate-800 tracking-wide uppercase"></h4>
+                <div class="nama-kandidat">CALON 01</div>
             </div>
 
-            <div class="flex gap-3">
-                <button onclick="tutupModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition text-sm">Batal</button>
-                <button onclick="prosesCoblos()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg transition text-sm">Yakin & Coblos</button>
+            <!-- Kandidat 2 (CASTAM) -->
+            <div class="kandidat-card" onclick="pilihKandidat(2, 'CASTAM AS', true)">
+                <div class="foto-container">
+                    <div class="nomor-urut">2</div>
+                    <img src="image/Castam.jpeg" class="foto-kandidat" alt="Foto Castam">
+                </div>
+                <div class="nama-kandidat">CASTAM AS</div>
             </div>
+
+        </div>
+
+        <button id="btn-pilih-utama" class="btn-pilih" disabled="" onclick="tampilKonfirmasi()">PILIH KANDIDAT INI</button>
+    </div>
+
+    <!-- LAYAR 2: KONFIRMASI -->
+    <div id="screen-konfirmasi" class="screen">
+        <h3>Konfirmasi Pilihan Anda</h3>
+        <p>Apakah Anda yakin memilih kandidat ini?</p>
+        
+        <div class="konfirmasi-box">
+            <div id="konfirmasi-foto-container"></div>
+            <h2 id="nama-konfirmasi" style="margin-top: 10px;">Nama Kandidat</h2>
+            <p id="nomor-konfirmasi">Calon Nomor Urut X</p>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-batal" onclick="kembaliPilih()">ULANGI</button>
+            <button class="btn-lanjut" onclick="prosesPilih()">PILIH</button>
         </div>
     </div>
 
-    <!-- Animasi Surat Suara -->
-    <div id="layarAnimasi" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex-col items-center justify-center p-4 z-50">
-        <div id="wadahAnimasi" class="relative flex flex-col items-center">
-            <div id="kertasSuara" class="bg-white text-slate-900 p-4 rounded-xl shadow-2xl border-2 border-blue-500 w-48 text-center mb-6">
-                <i class="fas fa-vote-yea text-blue-600 text-3xl mb-1"></i>
-                <p class="font-black text-xs uppercase">Surat Suara Digital</p>
-                <span id="animasiNomor" class="text-xs font-bold text-slate-600"></span>
+    <!-- LAYAR 3: SUKSES -->
+    <div id="screen-sukses" class="screen" onclick="resetAplikasi()">
+        
+        <div class="bg-blur-replika">
+            <div class="judul-blur">
+                <h3>Silakan Pilih Calon Kepala Desa</h3>
             </div>
-            <div class="w-48 h-32 bg-gradient-to-b from-blue-600 to-blue-800 rounded-2xl border-4 border-blue-400 shadow-2xl flex items-center justify-center relative overflow-hidden">
-                <div class="w-32 h-3 bg-slate-900 rounded-full border border-blue-400/50"></div>
-                <span class="absolute bottom-2 text-[10px] text-blue-100 font-bold uppercase tracking-wider">Kotak Suara</span>
+            <div class="bg-blur-grid">
+                <div class="bg-blur-card"><img src="image/02.png" class="foto-kandidat" alt="Calon 01 Blur"></div>
+                <div class="bg-blur-card"><img src="image/Castam.jpeg" class="foto-kandidat" alt="Castam Blur"></div>
             </div>
         </div>
 
-        <div id="pesanSukses" class="hidden text-center transform transition-all duration-500 bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-slate-100">
-            <div class="w-20 h-20 bg-emerald-100 border-2 border-emerald-500 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm">
-                <i class="fas fa-check"></i>
-            </div>
-            <h2 class="text-2xl font-black text-slate-800 mb-1">Terima Kasih!</h2>
-            <p class="text-sm text-slate-500 mb-6">Pilihan Anda telah berhasil direkam ke sistem.</p>
-            <button onclick="selesaiSimulasi()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg transition text-sm">
-                Pemilih Berikutnya <i class="fas fa-arrow-right ml-2"></i>
-            </button>
+        <div class="bg-blur-overlay"></div>
+
+        <div class="sukses-content">
+            <div class="sukses-icon">✅</div>
+            <h2>Terima Kasih!</h2>
+            <p style="margin-top: 10px; font-size: 18px; font-weight: bold; color: #2c3e50;">Suara Anda telah berhasil direkam.</p>
         </div>
     </div>
 
-    <!-- Modal Kelola Data (Admin Panel) -->
-    <div id="modalAdmin" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
-                <h3 class="text-base md:text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-tasks text-blue-600"></i> Panel Kelola Data Simulasi</h3>
-                <button onclick="tutupAdminModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
-            </div>
+</div>
 
-            <!-- Form Pengaturan -->
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-6">
-                <h4 class="font-bold text-sm text-slate-700 mb-3">Pengaturan Acara</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <input type="text" id="inputTitle" placeholder="Judul Utama" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="text" id="inputSubTitle" placeholder="Nama Desa/Lokasi" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="text" id="inputYear" placeholder="Tahun" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
-                </div>
-                <button onclick="simpanPengaturan()" class="mt-3 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition">Simpan Pengaturan</button>
-            </div>
+<script>
+    let kandidatTerpilih = null;
 
-            <!-- Form Tambah Kandidat -->
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-6">
-                <h4 class="font-bold text-sm text-slate-700 mb-3">Tambah Kandidat Baru</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <input type="number" id="inputNoUrut" placeholder="No Urut (e.g. 1)" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="text" id="inputNama" placeholder="Nama Kandidat" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="text" id="inputFoto" placeholder="Path Foto (e.g. image/Castam.jpeg)" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
-                </div>
-                <button onclick="tambahKandidat()" class="mt-3 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition">Tambah Kandidat</button>
-            </div>
+    // Fungsi memilih kandidat
+    function pilihKandidat(nomor, nama, punyaFoto) {
+        const cards = document.querySelectorAll('.kandidat-card');
+        cards.forEach(card => card.classList.remove('selected'));
 
-            <!-- Daftar Kandidat & Hasil Suara -->
-            <div>
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                    <h4 class="font-bold text-sm text-slate-700">Daftar Kandidat & Perolehan Suara</h4>
-                    <button onclick="resetSuara()" class="text-xs bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg border border-red-200 transition font-bold">
-                        <i class="fas fa-redo"></i> Reset Hasil Suara
-                    </button>
-                </div>
-                <div id="adminCandidateList" class="space-y-2"></div>
-            </div>
-        </div>
-    </div>
+        event.currentTarget.classList.add('selected');
 
-    <script>
-        const defaultData = {
-            settings: {
-                title: "PILKADES DESA DIGITAL (SIMULASI)",
-                sub_title: "Desa Kediri, Kecamatan Binong, Kabupaten Subang",
-                year: "2026"
-            },
-            candidates: [
-                { id: 1, candidate_number: 1, name: "CALON 01", photo: "image/02.png", votes: 0 },
-                { id: 2, candidate_number: 2, name: "CALON 02", photo: "image/Castam.jpeg", votes: 0 }
-            ]
-        };
+        // Simpan data, kita tambahkan flag 'punyaFoto' (true/false)
+        kandidatTerpilih = { nomor: nomor, nama: nama, punyaFoto: punyaFoto };
 
-        function loadData() {
-            const saved = localStorage.getItem('pilkades_data_subang_v2');
-            return saved ? JSON.parse(saved) : defaultData;
+        document.getElementById('btn-pilih-utama').disabled = false;
+    }
+
+    // Fungsi Konfirmasi
+    function tampilKonfirmasi() {
+        if (!kandidatTerpilih) return;
+
+        let fotoHTML = '';
+        
+        if (kandidatTerpilih.nomor === 1) {
+            fotoHTML = `<img src="image/02.png" alt="Foto Calon 01" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
+        } else if (kandidatTerpilih.nomor === 2) {
+            fotoHTML = `<img src="image/Castam.jpeg" alt="Foto Castam" style="width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px; object-fit: cover; object-position: top;">`;
+        } else {
+            fotoHTML = `
+                <div class="siluet" style="margin: 0 auto; width: 150px; height: 180px; border-radius: 10px; border: 3px solid #e74c3c; margin-bottom: 15px;">
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>`;
         }
 
-        function saveData(data) {
-            localStorage.setItem('pilkades_data_subang_v2', JSON.stringify(data));
-            renderApp();
-        }
+        document.getElementById('konfirmasi-foto-container').innerHTML = fotoHTML;
+        document.getElementById('nama-konfirmasi').innerText = kandidatTerpilih.nama;
+        document.getElementById('nomor-konfirmasi').innerText = "Calon Nomor Urut " + kandidatTerpilih.nomor;
 
-        let kandidatTerpilih = null;
+        gantiLayar('screen-konfirmasi');
+    }
 
-        function renderApp() {
-            const data = loadData();
-            document.getElementById('appTitle').innerText = data.settings.title;
-            document.getElementById('appSubTitle').innerText = `${data.settings.sub_title} - Tahun ${data.settings.year}`;
+    function kembaliPilih() {
+        gantiLayar('screen-kandidat');
+    }
 
-            const container = document.getElementById('candidateContainer');
-            container.innerHTML = '';
+    function prosesPilih() {
+        gantiLayar('screen-sukses');
+    }
 
-            data.candidates.forEach(row => {
-                const card = document.createElement('div');
-                card.className = 'group relative bg-white border-2 border-slate-200 hover:border-blue-500 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer flex flex-col w-full sm:w-64';
-                card.onclick = () => bukaModal(row.id, row.name, row.candidate_number, row.photo);
-                
-                card.innerHTML = `
-                    <div class="absolute top-3 left-3 z-10 bg-blue-600 text-white font-black text-sm px-3 py-1 rounded-lg shadow-md border border-blue-400">
-                        ${String(row.candidate_number).padStart(2, '0')}
-                    </div>
-                    <div class="w-full aspect-[4/3] bg-slate-100 overflow-hidden relative">
-                        <img src="${row.photo || 'https://via.placeholder.com/400x300?text=No+Photo'}" alt="${row.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                    </div>
-                    <div class="p-4 bg-white border-t border-slate-100 text-center flex-1 flex flex-col justify-center">
-                        <h3 class="font-black text-base md:text-lg text-slate-800 group-hover:text-blue-600 transition tracking-wide uppercase line-clamp-1">${row.name}</h3>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+    function resetAplikasi() {
+        kandidatTerpilih = null;
+        document.getElementById('btn-pilih-utama').disabled = true;
+        
+        const cards = document.querySelectorAll('.kandidat-card');
+        cards.forEach(card => card.classList.remove('selected'));
 
-        function bukaModal(id, nama, nomor, foto) {
-            kandidatTerpilih = { id, nama, nomor, foto };
-            document.getElementById('modalNama').innerText = nama;
-            document.getElementById('modalNomor').innerText = "Calon Nomor Urut " + nomor;
-            document.getElementById('modalFoto').src = foto;
-            document.getElementById('modalKonfirmasi').classList.remove('hidden');
-            document.getElementById('modalKonfirmasi').classList.add('flex');
-        }
+        gantiLayar('screen-kandidat');
+    }
 
-        function tutupModal() {
-            document.getElementById('modalKonfirmasi').classList.add('hidden');
-            document.getElementById('modalKonfirmasi').classList.remove('flex');
-        }
+    function gantiLayar(idLayar) {
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => screen.classList.remove('active'));
+        document.getElementById(idLayar).classList.add('active');
+    }
+</script>
 
-        function prosesCoblos() {
-            tutupModal();
-            const data = loadData();
-            const index = data.candidates.findIndex(c => c.id === kandidatTerpilih.id);
-            if (index !== -1) {
-                data.candidates[index].votes += 1;
-                saveData(data);
-            }
-
-            const layar = document.getElementById('layarAnimasi');
-            const kertas = document.getElementById('kertasSuara');
-            const pesan = document.getElementById('pesanSukses');
-            const wadah = document.getElementById('wadahAnimasi');
-
-            document.getElementById('animasiNomor').innerText = "Calon #" + kandidatTerpilih.nomor;
-
-            layar.classList.remove('hidden');
-            layar.classList.add('flex');
-            wadah.classList.remove('hidden');
-            pesan.classList.add('hidden');
-            kertas.classList.add('ballot-drop');
-
-            setTimeout(() => {
-                wadah.classList.add('hidden');
-                pesan.classList.remove('hidden');
-                kertas.classList.remove('ballot-drop');
-            }, 1300);
-        }
-
-        function selesaiSimulasi() {
-            document.getElementById('layarAnimasi').classList.add('hidden');
-            document.getElementById('layarAnimasi').classList.remove('flex');
-        }
-
-        function bukaAdminModal() {
-            const data = loadData();
-            document.getElementById('inputTitle').value = data.settings.title;
-            document.getElementById('inputSubTitle').value = data.settings.sub_title;
-            document.getElementById('inputYear').value = data.settings.year;
-
-            renderAdminCandidateList();
-            document.getElementById('modalAdmin').classList.remove('hidden');
-            document.getElementById('modalAdmin').classList.add('flex');
-        }
-
-        function tutupAdminModal() {
-            document.getElementById('modalAdmin').classList.add('hidden');
-            document.getElementById('modalAdmin').classList.remove('flex');
-        }
-
-        function renderAdminCandidateList() {
-            const data = loadData();
-            const totalVotes = data.candidates.reduce((sum, c) => sum + c.votes, 0);
-            const listContainer = document.getElementById('adminCandidateList');
-            listContainer.innerHTML = '';
-
-            data.candidates.forEach(k => {
-                const persen = totalVotes > 0 ? ((k.votes / totalVotes) * 100).toFixed(1) : 0;
-                const item = document.createElement('div');
-                item.className = 'bg-slate-100 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3 text-xs';
-                item.innerHTML = `
-                    <div class="flex items-center gap-3 overflow-hidden">
-                        <span class="bg-blue-600 text-white font-bold px-2.5 py-1 rounded-md shrink-0">#${String(k.candidate_number).padStart(2, '0')}</span>
-                        <img src="${k.photo || 'https://via.placeholder.com/100'}" class="w-10 h-8 object-cover rounded border shrink-0">
-                        <div class="truncate">
-                            <h5 class="font-bold text-slate-800 uppercase truncate">${k.name}</h5>
-                            <p class="text-slate-500">${k.votes} Suara (${persen}%)</p>
-                        </div>
-                    </div>
-                    <button onclick="hapusKandidat(${k.id})" class="text-red-500 hover:text-red-700 p-2 shrink-0"><i class="fas fa-trash"></i></button>
-                `;
-                listContainer.appendChild(item);
-            });
-        }
-
-        function simpanPengaturan() {
-            const data = loadData();
-            data.settings.title = document.getElementById('inputTitle').value;
-            data.settings.sub_title = document.getElementById('inputSubTitle').value;
-            data.settings.year = document.getElementById('inputYear').value;
-            saveData(data);
-            alert('Pengaturan berhasil disimpan!');
-        }
-
-        function tambahKandidat() {
-            const no = document.getElementById('inputNoUrut').value;
-            const nama = document.getElementById('inputNama').value;
-            const foto = document.getElementById('inputFoto').value;
-
-            if (!no || !nama) return alert('Nomor urut dan Nama kandidat wajib diisi!');
-
-            const data = loadData();
-            const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id)) + 1 : 1;
-            data.candidates.push({
-                id: newId,
-                candidate_number: parseInt(no),
-                name: nama,
-                photo: foto || 'https://via.placeholder.com/400x300?text=No+Photo',
-                votes: 0
-            });
-
-            saveData(data);
-            renderAdminCandidateList();
-            document.getElementById('inputNoUrut').value = '';
-            document.getElementById('inputNama').value = '';
-            document.getElementById('inputFoto').value = '';
-        }
-
-        function hapusKandidat(id) {
-            if (!confirm('Hapus kandidat ini?')) return;
-            const data = loadData();
-            data.candidates = data.candidates.filter(c => c.id !== id);
-            saveData(data);
-            renderAdminCandidateList();
-        }
-
-        function resetSuara() {
-            if (!confirm('Apakah Anda yakin ingin mereset perolehan suara?')) return;
-            const data = loadData();
-            data.candidates.forEach(c => c.votes = 0);
-            saveData(data);
-            renderAdminCandidateList();
-        }
-
-        renderApp();
-    </script>
-</body>
-</html>
+</body></html>
